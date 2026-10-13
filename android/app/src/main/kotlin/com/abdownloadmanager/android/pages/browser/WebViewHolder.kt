@@ -219,6 +219,7 @@ class ABDMChromeClient(
     private val browserComponent: BrowserComponent,
     private val createWebViewHolder: (tab: ABDMBrowserTab) -> WebViewHolder,
 ) : AccompanistWebChromeClient() {
+
     override fun onCreateWindow(
         view: WebView?,
         isDialog: Boolean,
@@ -237,6 +238,28 @@ class ABDMChromeClient(
         newWebView.openedBy = view.originalUrl ?: view.url
         transport.webView = newWebView
         resultMsg.sendToTarget()
+        return true
+    }
+
+    override fun onShowFileChooser(
+        webView: WebView?,
+        filePathCallback: ValueCallback<Array<Uri>>?,
+        fileChooserParams: FileChooserParams?
+    ): Boolean {
+        if (filePathCallback == null) return false
+
+        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "*/*"
+            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, fileChooserParams?.mode == FileChooserParams.MODE_OPEN_MULTIPLE)
+        }
+
+        browserComponent.sendEffect(
+            BrowserComponent.Effects.ShowFileChooser(
+                filePathCallback = filePathCallback,
+                intent = Intent.createChooser(intent, "Select File")
+            )
+        )
         return true
     }
 }
