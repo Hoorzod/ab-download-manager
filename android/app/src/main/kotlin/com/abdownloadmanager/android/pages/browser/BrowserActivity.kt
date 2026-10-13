@@ -15,10 +15,29 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import androidx.core.net.toUri
 import com.abdownloadmanager.android.storage.BrowserBookmarksStorage
+import android.net.Uri
+import android.webkit.ValueCallback
+import androidx.activity.result.contract.ActivityResultContracts
 
 class BrowserActivity : ABDMActivity() {
     private val browserBookmarksStorage: BrowserBookmarksStorage by inject()
     private val json: Json by inject()
+
+    private var filePathCallback: ValueCallback<Array<Uri>>? = null
+
+    private val fileChooserLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val uris = if (result.resultCode == RESULT_OK && result.data != null) {
+            result.data?.clipData?.let { clip ->
+                Array(clip.itemCount) { i -> clip.getItemAt(i).uri }
+            } ?: result.data?.data?.let { arrayOf(it) }
+        } else null
+
+        filePathCallback?.onReceiveValue(uris)
+        filePathCallback = null
+    }
+
     val component by lazy {
         BrowserComponent(
             componentContext = defaultComponentContext(),
@@ -32,15 +51,20 @@ class BrowserActivity : ABDMActivity() {
         super.onCreate(savedInstanceState)
         setABDMContent {
             HandleEffects(component) {
-                when (it) {
-                    is BrowserComponent.Effects.StartActivity -> {
-                        startActivity(it.intent)
-                    }
+    when (it) {
+        is BrowserComponent.Effects.StartActivity -> {
+            startActivity(it.intent)
+        }
 
-                    is BrowserComponent.Effects.ShareText -> {
-                        AndroidIntentUtils.shareText(this, it.text)
-                    }
-                }
+        is BrowserComponent.Effects.ShareText -> {
+            AndroidIntentUtils.shareText(this, it.text)
+        }
+
+        is BrowserComponent.Effects.ShowFileChooser -> {
+            filePathCallback = it.filePathCallback
+            fileChooserLauncher.launch(it.intent)
+        }
+    }
             }
             BrowserPage(component)
         }
