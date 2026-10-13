@@ -72,7 +72,7 @@ class WebViewRegistry(
             webView.settings.setSupportMultipleWindows(true)
             webView.settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
             webView.settings.allowFileAccess = true
-webView.settings.allowContentAccess = true
+            webView.settings.allowContentAccess = true
             webView.isLongClickable = true
             webView.setOnLongClickListener {
                 val hit = webView.hitTestResult
@@ -179,9 +179,7 @@ class ABDMWebViewClient(
 if (url.startsWith("http://") || url.startsWith("https://") || 
     url.startsWith("file://") || url.startsWith("content://")) {
     return false
-}
-        }
-
+    }
         // Handle intent:// URIs
         if (url.startsWith("intent://")) {
             try {
