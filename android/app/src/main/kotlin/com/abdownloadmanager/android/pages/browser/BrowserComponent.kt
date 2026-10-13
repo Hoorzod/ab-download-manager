@@ -234,6 +234,10 @@ class BrowserComponent(
         if (value.contains(' ')) {
             return createSearchEngineUrl(value)
         }
+        // Accept local files
+if (value.startsWith("file://") || value.startsWith("content://")) {
+    return value
+}
         if (HttpUrlUtils.isValidUrl(value)) {
             return value
         }
