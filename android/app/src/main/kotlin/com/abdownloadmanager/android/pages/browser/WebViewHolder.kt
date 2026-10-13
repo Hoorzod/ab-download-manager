@@ -16,7 +16,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.UUID
-
+import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
 class WebViewRegistry(
     private val scope: CoroutineScope,
     private val browserComponent: BrowserComponent,
@@ -244,14 +245,17 @@ class ABDMChromeClient(
     override fun onShowFileChooser(
         webView: WebView?,
         filePathCallback: ValueCallback<Array<Uri>>?,
-        fileChooserParams: FileChooserParams?
+        fileChooserParams: WebChromeClient.FileChooserParams?
     ): Boolean {
         if (filePathCallback == null) return false
 
         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
             type = "*/*"
-            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, fileChooserParams?.mode == FileChooserParams.MODE_OPEN_MULTIPLE)
+            putExtra(
+                Intent.EXTRA_ALLOW_MULTIPLE,
+                fileChooserParams?.mode == WebChromeClient.FileChooserParams.MODE_OPEN_MULTIPLE
+            )
         }
 
         browserComponent.sendEffect(
@@ -263,7 +267,6 @@ class ABDMChromeClient(
         return true
     }
 }
-
 class ABDMWebView(
     context: Context,
 ) : WebView(context) {
