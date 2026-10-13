@@ -31,6 +31,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.serialization.json.Json
 import java.util.UUID
 import kotlin.text.orEmpty
+import android.net.Uri
+import android.webkit.ValueCallback
 
 class BrowserComponent(
     componentContext: ComponentContext,
@@ -384,6 +386,11 @@ if (value.startsWith("file://") || value.startsWith("content://")) {
 
         data class ShareText(
             val text: String,
+        ) : Effects
+        
+        data class ShowFileChooser(
+            val filePathCallback: ValueCallback<Array<Uri>>,
+            val intent: Intent,
         ) : Effects
     }
 }
